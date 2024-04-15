@@ -71,11 +71,11 @@ public:
     virtual int nextTick() = 0;
     
     /**
-     * @brief Check if the task has expired.
+     * @brief The time after which the task will be expired.
      * @param task The task being checked.
-     * @return The flag whether the task has expired.
+     * @return The time in milliseconds.
      */
-    bool hasExpired(const TimerTask& task);
+    int timeToExpire(const TimerTask& task);
 };
 
 /**
@@ -114,7 +114,7 @@ public:
 
     /**
      * @brief Execute tasks that are due and return the waiting time for the next task.
-     * @return The waiting time (in milliseconds) for the next task.
+     * @return The waiting time (in milliseconds) for the next task, -1 for no task.
      */
     int nextTick() override;
 

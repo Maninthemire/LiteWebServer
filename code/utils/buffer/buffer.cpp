@@ -48,11 +48,21 @@ void Buffer::delData(size_t len){
 }
 
 std::string Buffer::getData(size_t len){
-    if(len >= size())
-        len = size();
+    if(len > size())
+        return "";
     std::string str(buffer_.data() + readPos_, len);
     delData(len);
     return str;
+}
+
+std::string Buffer::getUntil(const std::string &suffix){
+    const char* lineEnd = std::search(data(), data() + size(), suffix.begin(), suffix.end());
+    // If not found, return empty string and keep buffer unmodified.
+    if(lineEnd == data() + size())
+        return ""; 
+    std::string line(data(), lineEnd + suffix.size());
+    delData(line.size());
+    return line;
 }
 
 ssize_t Buffer::readFd(int fd, int* Errno){

@@ -14,8 +14,9 @@
  * This class provides functionalities to add, update, and fetch the next 
  * scheduled task. It aims to to efficiently track and handle timed events.
  */
-bool Timer::hasExpired(const TimerTask& task){
-    return std::chrono::duration_cast<MS>(task.executeTime - Clock::now()).count() <= 0;
+
+int Timer::timeToExpire(const TimerTask& task){
+    return std::chrono::duration_cast<MS>(task.executeTime - Clock::now()).count();
 }
 
 /**
@@ -25,6 +26,7 @@ bool Timer::hasExpired(const TimerTask& task){
  * This class provides functionalities to add, update, and fetch the next scheduled task. 
  * It utilizes a min-heap structure to efficiently track and handle timed events.
  */
+
 void HeapTimer::swapNode_(size_t i, size_t j) {
     assert(i >= 0 && i < heap_.size());
     assert(j >= 0 && j < heap_.size());
@@ -59,7 +61,12 @@ void HeapTimer::siftDown_(size_t index) {
 }
 
 void HeapTimer::popNode_(){
-    
+    heap_.front().taskFunc();
+    swapNode_(0, heap_.size() - 1);
+    ref_.erase(heap_.back().id);
+    heap_.pop_back();
+    if(!heap_.empty())
+        siftDown_(0);
 }
 
 HeapTimer::~HeapTimer(){
@@ -89,8 +96,13 @@ int HeapTimer::nextTick(){
         return -1;
     
     // Execute tasks that are due.
-    while(!heap_.empty() && hasExpired(heap_.front())) {
-        heap_.front().taskFunc();
+    while(!heap_.empty() && timeToExpire(heap_.front()) <= 0) 
         popNode_();
-    }
+    
+    // The waiting time (in milliseconds) for the next task
+    // -1 for no task, 0 for next task already due
+    int timeMS = -1;
+    if(!heap_.empty())
+        timeMS = timeToExpire(heap_.front()) > 0 ? timeToExpire(heap_.front()) : 0;
+    return timeMS;
 }

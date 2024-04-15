@@ -1,16 +1,113 @@
 /*
  * @file        : httprequest.h
  * @Author      : zhenxi
- * @Date        : 2024-03-11
+ * @Date        : 2024-03-12
  * @copyleft    : Apache 2.0
  * Description  : This file contains the declaration of the HttpRequest class, which is designed for 
- *                parsing a http request message in a safe and efficient manner. It encapsulates 
+ *                parsing a HTTP request message in a safe and efficient manner. It encapsulates 
  *                operations such as parsing message from the buffer, retrieving headers and fields.
  */
 
 #ifndef HTTP_REQUEST_H
 #define HTTP_REQUEST_H
 
+#include <assert.h> 
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include "../utils/buffer/buffer.h"
+#include <string>
+#include <regex>
+#include <errno.h>
+
+/**
+ * @class HttpRequest
+ * @brief The HttpRequest class is used to parsing HTTP request messages.
+ * 
+ * This class provides functionalities to parse HTTP request messages 
+ * from Buffer and access the corresponding headers and fields. To make 
+ * it more efficient, the content of POST request messages (if any) remains 
+ * in the Buffer.
+ */
+class HttpRequest {
+public:
+    enum PARSE_STATE {
+        REQUEST_LINE,
+        HEADERS,
+        BODY,      
+        FINISH,
+        INVALID,
+    };
+
+    /**
+     * @brief Constructor for HttpRequest.
+     * To initialze the data structures.
+     */
+    HttpRequest() { clear(); };
+    
+    /**
+     * @brief Deconstructor for HttpRequest.
+     * To free the space of its data structure by default.
+     */
+    ~HttpRequest() = default;
+
+    /**
+     * @brief To clear the previous request message (if any).
+     */
+    void clear();
+
+    /**
+     * @brief Parses the incoming HTTP data stored in the buffer.
+     * To parse the input as a HTTP request while remains the body 
+     * (if any) in the buff.
+     */
+    void parse(Buffer& buff);
+
+    /**
+     * @brief Check if the header is ready.
+     */
+    bool headerReady() const;
+    
+    /**
+     * @brief Get the method of request.
+     */
+    std::string method() const;
+
+    /**
+     * @brief Get the URL of request.
+     */
+    std::string url() const;
+
+    /**
+     * @brief Get the http version of request.
+     */
+    std::string version() const;
+
+    /**
+     * @brief Get the value of the field in the header.
+     * @return The value of corresponding field (empty if no such field.)
+     */
+    std::string getHeader(std::string fieldName) const;
+
+private:
+    PARSE_STATE state_;
+    std::string method_, url_, version_; // Content of request line
+    std::unordered_map<std::string, std::string> header_; // Fields of request header
+    const std::string CRLF = "\r\n"; // Suffix of Carriage Return Line Feed
+    static const std::unordered_set<std::string> DEFAULT_HTML;
+
+    /**
+     * @brief Parse the request line.
+     * @param line The request line.
+     */
+    void parseRequestLine_(const std::string& line);
+
+    /**
+     * @brief Parse the request header.
+     * @param line The request header.
+     */
+    void parseHeader_(const std::string& line);
+};
 
 
 #endif //HTTP_REQUEST_H

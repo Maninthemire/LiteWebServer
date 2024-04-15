@@ -18,6 +18,7 @@
 #include <atomic>
 #include <cstring>
 #include <iostream>
+#include <algorithm>
 
 /**
  * @class Buffer
@@ -84,6 +85,13 @@ public:
      * @return The data from the buffer as a string.
      */
     std::string getData(size_t len);
+
+    /**
+     * @brief Get string from the buffer which end with the suffix.
+     * @param suffix The suffix of string.
+     * @return The data from the buffer as a string.
+     */
+    std::string getUntil(const std::string& suffix);
 
     /**
      * @brief Read data from the File Descriptor.
