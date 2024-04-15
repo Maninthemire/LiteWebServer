@@ -38,13 +38,12 @@ const std::unordered_map<int, std::string> HttpResponse::CODE_STATUS = {
 
 void HttpResponse::clear() {
     code_ = -1;
-    body_ = "";
     header_.clear();
-    if(contentFd > 0)
-        close(contentFd);
-    contentComplete = false;
-    contentFd = -1;
-    contentLen = contentOffset = 0;
+    if(contentFd_ > 0)
+        close(contentFd_);
+    contentComplete_ = false;
+    contentFd_ = -1;
+    contentLen_ = contentOffset_ = 0;
 }
 
 void HttpResponse::addHeader(const std::string &key, const std::string &value){
@@ -52,24 +51,24 @@ void HttpResponse::addHeader(const std::string &key, const std::string &value){
 }
 
 // bool HttpResponse::addBody(std::string &str){
-//     if(contentComplete)
+//     if(contentComplete_)
 //         return false;
 //     addHeader("Content-Type", "text/plain");
 //     addHeader("Content-Length", std::to_string(str.size()));
 //     body_ = str;
-//     contentComplete = true;
+//     contentComplete_ = true;
 //     return true;
 // }
 
 bool HttpResponse::addBody(std::string &filepath){
-    if(contentComplete)
+    if(contentComplete_)
         return false;
-    contentFd = open(filepath.data(), O_RDONLY);
+    contentFd_ = open(filepath.data(), O_RDONLY);
     struct stat file_stat;
-    if (fstat(contentFd, &file_stat) == -1) 
+    if (fstat(contentFd_, &file_stat) == -1) 
         return false;
-    contentLen = file_stat.st_size;
-    contentComplete = true;
+    contentLen_ = file_stat.st_size;
+    contentComplete_ = true;
 
     std::string typeName = "text/plain";
     std::string::size_type idx = filepath.find_last_of('.');
@@ -80,7 +79,7 @@ bool HttpResponse::addBody(std::string &filepath){
         }
     }
     addHeader("Content-Type", typeName);
-    addHeader("Content-Length", std::to_string(contentLen));
+    addHeader("Content-Length", std::to_string(contentLen_));
     return true;
 }
 
@@ -100,4 +99,21 @@ void HttpResponse::makeMessage(Buffer &buff, int code)
     // make response headers
     for(auto field: header_)
         buff.addData(field.first + ": " + field.second + "\r\n");
+}
+
+int HttpResponse::contentFd() const{
+    return contentFd_;
+}
+
+off64_t HttpResponse::contentLen() const{
+    return contentLen_;
+}
+
+off64_t HttpResponse::contentOffset() const{
+    return contentOffset_;
+}
+
+
+void HttpResponse::contentSend(off64_t len){
+    contentOffset_ += len;
 }

@@ -15,10 +15,10 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include "../utils/buffer/buffer.h"
 #include <string>
 #include <regex>
 #include <errno.h>
+#include "../utils/buffer/buffer.h"
 
 /**
  * @class HttpRequest
@@ -60,14 +60,16 @@ public:
      * @brief Parses the incoming HTTP data stored in the buffer.
      * To parse the input as a HTTP request while remains the body 
      * (if any) in the buff.
+     * @return True if requet line and header is ready.
      */
-    void parse(Buffer& buff);
+    bool parse(Buffer& buff);
 
     /**
-     * @brief Check if the header is ready.
+     * @brief Parses the the body as url key-value pairs.
+     * @return True if the body is totally parsed.
      */
-    bool headerReady() const;
-    
+    bool parseURL(Buffer &buff);
+
     /**
      * @brief Get the method of request.
      */
@@ -89,12 +91,20 @@ public:
      */
     std::string getHeader(std::string fieldName) const;
 
+    /**
+     * @brief Get the value of the key in the url posted.
+     * @return The value of corresponding key (empty if no such key.)
+     */
+    std::string getPost(std::string key) const;
+
 private:
     PARSE_STATE state_;
     std::string method_, url_, version_; // Content of request line
     std::unordered_map<std::string, std::string> header_; // Fields of request header
+    std::unordered_map<std::string, std::string> post_; // Content of post request
     const std::string CRLF = "\r\n"; // Suffix of Carriage Return Line Feed
     static const std::unordered_set<std::string> DEFAULT_HTML;
+    
 
     /**
      * @brief Parse the request line.

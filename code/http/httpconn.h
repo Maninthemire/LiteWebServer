@@ -14,7 +14,8 @@
 #define HTTP_CONN_H
 
 #include <sys/types.h>
-#include <sys/uio.h>     // readv/writev
+#include <sys/uio.h>     // readv
+#include <sys/sendfile.h>// sendfile
 #include <arpa/inet.h>   // sockaddr_in
 #include <stdlib.h>      // atoi()
 #include <errno.h>      
@@ -23,6 +24,7 @@
 #include "../utils/buffer/buffer.h"
 #include "httprequest.h"
 #include "httpresponse.h"
+#include "router.h"
 // #include "../log/log.h"
 
 class Router;
@@ -76,9 +78,14 @@ public:
     int HttpConn::getPort() const;
 
     /**
+     * @brief  To get the number of remained bytes.
+     */
+    off64_t HttpConn::toWriteBytes() const ;
+
+    /**
      * @brief  To read from the socket.
      */
-    ssize_t read(int * saveErrno);
+    off64_t readSocket(int * saveErrno);
 
     /**
      * @brief  To respond to the request.
@@ -88,7 +95,7 @@ public:
     /**
      * @brief  To write into the socket.
      */
-    ssize_t write(int *saveErrno);
+    off64_t writeSocket(int *saveErrno);
 
     static bool isET;
     static const char *srcDir;
@@ -103,19 +110,8 @@ private:
     HttpRequest request_;
     HttpResponse response_;
 
-    static const std::unordered_set<std::string> DEFAULT_HTML;
-    static const std::unordered_map<std::string, int> DEFAULT_HTML_TAG;
-    static int ConverHex(char ch);
-
-    /**
-     * @brief  To parse the body of request message.
-     */
-    bool parseBody_();
-
-    /**
-     * @brief  To make response to the request message.
-     */
-    bool makeResponse_();
+    static Router router;
+    std::function<bool(HttpConn&)> cachedHandler; 
 };
 
 #endif //HTTP_CONN_H

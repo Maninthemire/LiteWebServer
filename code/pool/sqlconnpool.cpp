@@ -6,11 +6,6 @@
 
 #include "sqlconnpool.h"
 
-SqlConnPool::SqlConnPool() {
-    useCount_ = 0;
-    freeCount_ = 0;
-}
-
 SqlConnPool* SqlConnPool::Instance() {
     static SqlConnPool connPool;
     return &connPool;
@@ -36,8 +31,7 @@ void SqlConnPool::Init(const char* host, int port,
         }
         connQue_.push(sql);
     }
-    MAX_CONN_ = connSize;
-    sem_init(&semId_, 0, MAX_CONN_);
+    sem_init(&semId_, 0, connSize);
 }
 
 MYSQL* SqlConnPool::GetConn() {
@@ -70,11 +64,6 @@ void SqlConnPool::ClosePool() {
         mysql_close(item);
     }
     mysql_library_end();        
-}
-
-int SqlConnPool::GetFreeConnCount() {
-    std::lock_guard<std::mutex> locker(mtx_);
-    return connQue_.size();
 }
 
 SqlConnPool::~SqlConnPool() {

@@ -43,12 +43,19 @@ public:
      */
     Router() { loadRoutes_(); };
 
+    // /**
+    //  * @brief Routes the request to the appropriate handler.
+    //  * @param connection The HTTP connection.
+    //  * @return True if the request was handled successfully, false otherwise.
+    //  */
+    // bool routeRequest(HttpConn& connection);
+
     /**
      * @brief Routes the request to the appropriate handler.
      * @param connection The HTTP connection.
      * @return True if the request was handled successfully, false otherwise.
      */
-    bool routeRequest(HttpConn& connection);
+    HandlerFunc Router::getHandler(HttpConn& connection) ;
 
 private:
     /**
@@ -79,14 +86,21 @@ private:
      * @param connection The HTTP connection.
      * @return True if the request was handled successfully, false otherwise.
      */
-    bool errorHandler_(HttpConn&);
+    static bool errorHandler_(HttpConn&);
 
     /**
      * @brief Verify the user and password in the request.
      * @param connection The HTTP connection.
      * @return True if the request was handled successfully, false otherwise.
      */
-    static bool Router::userVerify_(HttpConn& connection);
+    static bool userVerify_(HttpConn& connection);
+
+    /**
+     * @brief Create the user with password in the request.
+     * @param connection The HTTP connection.
+     * @return True if the request was handled successfully, false otherwise.
+     */
+    static bool userCreate_(HttpConn& connection);
 
     /**
      * @brief Respond the request with the resource.
@@ -94,7 +108,7 @@ private:
      * @param path_to_file The path to the resource file.
      * @return True if the request was handled successfully, false otherwise.
      */
-    static bool Router::getResource_(HttpConn& connection, std::string path_to_file);
+    static bool getResource_(HttpConn& connection, std::string path_to_file);
 
     static const std::unordered_map<int, std::string> CODE_PATH;
 };

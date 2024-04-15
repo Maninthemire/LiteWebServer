@@ -64,14 +64,34 @@ public:
      * @brief To make the response message.
      */
     void makeMessage(Buffer& buff, int code);
+    
+    /**
+     * @brief Get the content File Descriptor
+     */
+    int contentFd() const;
+
+    /**
+     * @brief Get the content length
+     */
+    off64_t contentLen() const;
+
+    /**
+     * @brief Get the content offset
+     */
+    off64_t contentOffset() const;
+
+    /**
+     * @brief Get the content offset
+     */
+    void contentSend(off64_t len);
 
 private:
     int code_; // Status code
     std::unordered_map<std::string, std::string> header_; // Fields of response header
-    bool contentComplete;
-    int contentFd;
-    off64_t contentLen;
-    off64_t contentOffset;
+    bool contentComplete_;
+    int contentFd_;
+    off64_t contentLen_;
+    off64_t contentOffset_;
 
 
     static const std::unordered_map<std::string, std::string> SUFFIX_TYPE;
