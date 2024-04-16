@@ -14,20 +14,22 @@
 #define HTTP_CONN_H
 
 #include <sys/types.h>
+#include <limits.h>
 #include <sys/uio.h>     // readv
 #include <sys/sendfile.h>// sendfile
 #include <arpa/inet.h>   // sockaddr_in
 #include <stdlib.h>      // atoi()
 #include <errno.h>      
 #include <unordered_set>
-#include "../pool/sqlconnRAII.h"
-#include "../utils/buffer/buffer.h"
 #include "httprequest.h"
 #include "httpresponse.h"
-#include "router.h"
-// #include "../log/log.h"
+#include "../pool/sqlconnRAII.h"
+#include "../utils/buffer/buffer.h"
+#include "../log/log.h"
 
-class Router;
+
+class Router; // forward declaration
+
 /**
  * @class HttpConn
  * @brief The HttpConn class is used to manage HTTP connections.
@@ -65,22 +67,26 @@ public:
     /**
      * @brief  To get the address of HTTP connection.
      */
-    struct sockaddr_in HttpConn::getAddr() const ;
+    struct sockaddr_in getAddr() const ;
 
     /**
      * @brief  To get the IP address of HTTP connection.
      */
-    const char* HttpConn::getIP() const ;
+    const char* getIP() const ;
 
     /**
      * @brief  To get the port of HTTP connection.
      */
-    int HttpConn::getPort() const;
+    int getPort() const;
 
     /**
      * @brief  To get the number of remained bytes.
      */
-    off64_t HttpConn::toWriteBytes() const ;
+    off64_t toWriteBytes() const ;
+
+    bool isKeepAlive() const {
+        return isKeepAlive_;
+    }
 
     /**
      * @brief  To read from the socket.
@@ -98,11 +104,11 @@ public:
     off64_t writeSocket(int *saveErrno);
 
     static bool isET;
-    static const char *srcDir;
 
 private:
     int socketFd_;
     struct  sockaddr_in addr_;
+    bool isKeepAlive_;
 
     Buffer readBuff_;
     Buffer writeBuff_;

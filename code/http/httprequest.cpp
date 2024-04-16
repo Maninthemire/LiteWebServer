@@ -16,8 +16,10 @@ void HttpRequest::clear() {
 bool HttpRequest::parse(Buffer& buff) {
     while(buff.size() && state_ != BODY && state_ != INVALID) {
         std::string line = buff.getUntil(CRLF);
-        if(!line.size()) 
-            return;
+        if(!line.size()) {
+            // LOG_DEBUG("No Line in Buffer");
+            return false;
+        }
         switch(state_){
             case REQUEST_LINE:
                 parseRequestLine_(line);
@@ -29,7 +31,6 @@ bool HttpRequest::parse(Buffer& buff) {
                 break;
         }
     }
-    // LOG_DEBUG("[%s], [%s], [%s]", method_.c_str(), path_.c_str(), version_.c_str());
     return state_ >= BODY;
 }
 
@@ -61,7 +62,7 @@ bool HttpRequest::parseURL(Buffer& buff) {
         if(!pair.size()){
             pair = buff.getUntil(CRLF);
             if(!pair.size())
-                return;
+                return false;
             pair = pair.substr(0, pair.length() - 2);            
             state_ = FINISH;
             return true;
@@ -76,7 +77,6 @@ bool HttpRequest::parseURL(Buffer& buff) {
         else
             state_ = INVALID;
     }
-    // LOG_DEBUG("[%s], [%s], [%s]", method_.c_str(), path_.c_str(), version_.c_str());
     return state_ >= FINISH;
 }
 
@@ -106,6 +106,7 @@ std::string HttpRequest::getPost(std::string key) const{
 };
 
 void HttpRequest::parseRequestLine_(const std::string& line) {
+    // LOG_DEBUG("Parsing Request Line:%s", line.c_str());
     std::regex pattern("^([^ ]+) ([^ ]+) HTTP/([^ \r]+)\r\n$");
     std::smatch subMatch;
     if(std::regex_match(line, subMatch, pattern)) {   
@@ -116,18 +117,36 @@ void HttpRequest::parseRequestLine_(const std::string& line) {
     }
     else
         state_ = INVALID;
+    // LOG_DEBUG("[%s], [%s], [%s]", method_.c_str(), url_.c_str(), version_.c_str());
 }
 
 void HttpRequest::parseHeader_(const std::string& line) {
+    // LOG_DEBUG("Parsing Request Header [%s]", line.c_str());
     if(line == "\r\n"){
         state_ = BODY;
         return;
     } // Empty line means the header is over.
 
-    std::regex pattern("^([^:]+): ?[^ \r]+)\r\n$");
+    std::regex pattern("^([^:]+): ?([^\r]+)\r\n$");
     std::smatch subMatch;
-    if(std::regex_match(line, subMatch, pattern)) 
+    if(std::regex_match(line, subMatch, pattern)) {
         header_[subMatch[1]] = subMatch[2];
-    else
+        // LOG_DEBUG("Header [%s]: [%s]", subMatch[1].str().c_str(), subMatch[2].str().c_str());
+    }
+    else{
+        std::string result;
+        for (char c : line) {
+            if (c == '\r') {
+                result += "\\r";
+            } else if (c == '\n') {
+                result += "\\n";
+            } else if (c == ' ') {
+                result += "\\t";
+            } else {
+                result += c;
+            }
+        }
         state_ = INVALID;
+        LOG_ERROR("Invalid Header:[%s]", result.c_str());
+    }
 }

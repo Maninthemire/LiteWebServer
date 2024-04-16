@@ -61,13 +61,23 @@ void HttpResponse::addHeader(const std::string &key, const std::string &value){
 // }
 
 bool HttpResponse::addBody(std::string &filepath){
-    if(contentComplete_)
+    if(contentComplete_){
+        LOG_DEBUG("Multiple Content");
         return false;
+    }
     contentFd_ = open(filepath.data(), O_RDONLY);
-    struct stat file_stat;
-    if (fstat(contentFd_, &file_stat) == -1) 
+    // std::cout<<contentFd_<<std::endl;
+    if (contentFd_ == -1) {
+        LOG_DEBUG("Invalid Filepath");
         return false;
+    }
+    struct stat file_stat;
+    if (fstat(contentFd_, &file_stat) == -1) {
+        LOG_DEBUG("Error Filelength");
+        return false;
+    }
     contentLen_ = file_stat.st_size;
+    // std::cout<<contentLen_<<std::endl;
     contentComplete_ = true;
 
     std::string typeName = "text/plain";
@@ -99,6 +109,8 @@ void HttpResponse::makeMessage(Buffer &buff, int code)
     // make response headers
     for(auto field: header_)
         buff.addData(field.first + ": " + field.second + "\r\n");
+
+    LOG_DEBUG("Response Header\n%s", buff.data());
 }
 
 int HttpResponse::contentFd() const{

@@ -18,14 +18,14 @@ void SqlConnPool::Init(const char* host, int port,
     for (int i = 0; i < connSize; i++) {
         MYSQL * init_sql = mysql_init(nullptr);
         if (!init_sql) {
-            // LOG_ERROR("MySql init error!");
+            LOG_ERROR("MySql init error!");
             // assert(init_sql);
         }
         MYSQL * sql = mysql_real_connect(init_sql, host,
                                  user, pwd,
                                  dbName, port, nullptr, 0);
         if (!sql) {
-            // LOG_ERROR("MySql Connect error!");
+            LOG_ERROR("MySql Connect error!");
             std::cout << mysql_error(init_sql) << std::endl;
             // assert(sql);
         }
@@ -37,7 +37,7 @@ void SqlConnPool::Init(const char* host, int port,
 MYSQL* SqlConnPool::GetConn() {
     MYSQL *sql = nullptr;
     if(connQue_.empty()){
-        // LOG_WARN("SqlConnPool busy!");
+        LOG_WARN("SqlConnPool busy!");
         return nullptr;
     }
     sem_wait(&semId_);

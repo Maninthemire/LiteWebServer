@@ -18,15 +18,12 @@
 #include <stdarg.h>           // vastart va_end
 #include <assert.h>
 #include <sys/stat.h> 
-// #include "../log/log.h"
+#include "../log/log.h"
 
 class SqlConnPool {
+    friend class SqlConnRAII;
 public:
     static SqlConnPool *Instance();
-
-    MYSQL *GetConn();
-    void FreeConn(MYSQL * conn);
-    // int GetFreeConnCount();
 
     void Init(const char* host, int port,
               const char* user,const char* pwd, 
@@ -36,6 +33,10 @@ public:
 private:
     SqlConnPool() = default;
     ~SqlConnPool();
+
+    MYSQL *GetConn();
+
+    void FreeConn(MYSQL * conn);
 
     std::queue<MYSQL *> connQue_;
     std::mutex mtx_;

@@ -14,14 +14,16 @@
 #include <string>
 #include <sys/stat.h>
 #include <unordered_map>
-#include "httpconn.h"
-#include "../utils/buffer/buffer.h"
 #include <string>
 #include <regex>
 #include <errno.h>
 #include <unordered_map>
 #include <functional>
 #include <string>
+#include "httpconn.h"
+#include "../utils/buffer/buffer.h"
+#include "../log/log.h"
+
 
 /**
  * @class Router
@@ -55,7 +57,9 @@ public:
      * @param connection The HTTP connection.
      * @return True if the request was handled successfully, false otherwise.
      */
-    HandlerFunc Router::getHandler(HttpConn& connection) ;
+    HandlerFunc getHandler(HttpConn& connection);
+
+    static std::string srcDir;
 
 private:
     /**
@@ -66,17 +70,18 @@ private:
     // To store the mapping from method and URL to handlers.
     std::unordered_map<std::string, std::unordered_map<std::string, HandlerFunc>> routes;
     
-    static std::string srcDir;
 
     // Utility to add a route to the map
     void addRoute_(const std::string& method, const std::string& url, HandlerFunc handler); 
 
     inline static void setConnectionHeaders_(HttpConn& connection) {
         if(connection.request_.getHeader("Connection") == "keep-alive" && connection.request_.version() == "1.1") {
+            connection.isKeepAlive_ = true;
             connection.response_.addHeader("Connection", "keep-alive");
             connection.response_.addHeader("keep-alive", "max=6, timeout=120");
         }
         else {
+            connection.isKeepAlive_ = false;
             connection.response_.addHeader("Connection", "close");
         }
     }

@@ -13,6 +13,8 @@
 
 #include <time.h>
 #include <functional> 
+#include <vector> 
+#include <unordered_map>
 #include <chrono>
 #include <assert.h> 
 
@@ -28,7 +30,7 @@ typedef Clock::time_point TimeStamp;
  * specified times, suitable for use in systems that require timed operations.
  */
 struct TimerTask{
-    size_t id;  // For a connection timeout task, id can be the File Descriptor.
+    int id;  // For a connection timeout task, id can be the File Descriptor.
     TimeStamp executeTime;
     std::function<void()> taskFunc;
     bool operator<(const TimerTask& t) {

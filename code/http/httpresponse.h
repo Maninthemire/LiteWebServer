@@ -17,9 +17,10 @@
 #include <unistd.h>      // close
 #include <sys/stat.h>    // stat
 #include <unordered_map>
-#include "../utils/buffer/buffer.h"
 #include <regex>
 #include <errno.h>
+#include "../utils/buffer/buffer.h"
+#include "../log/log.h"
 
 /**
  * @class HttpResponse

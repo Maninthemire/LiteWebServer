@@ -19,6 +19,8 @@
 #include <cstring>
 #include <iostream>
 #include <algorithm>
+#include <cstdarg>
+#include <cstdio>
 
 /**
  * @class Buffer
@@ -72,6 +74,18 @@ public:
      * @param buff The buff to be addDataed.
      */
     void addData(const Buffer& buff);
+
+    /**
+     * @brief Print formatted string to the buffer.
+     * @return The length of written buffer.
+     */
+    int strPrintf(const char* format, ...);
+
+    /**
+     * @brief Print formatted string by arg vector to the buffer.
+     * @return The length of written buffer.
+     */
+    int vecPrintf(const char *__restrict__ format, va_list &arg);
 
     /**
      * @brief Delete data in the buffer.

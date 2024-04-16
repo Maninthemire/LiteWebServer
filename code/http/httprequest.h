@@ -19,6 +19,7 @@
 #include <regex>
 #include <errno.h>
 #include "../utils/buffer/buffer.h"
+#include "../log/log.h"
 
 /**
  * @class HttpRequest
