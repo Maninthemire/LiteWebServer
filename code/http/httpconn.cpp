@@ -98,7 +98,10 @@ ssize_t HttpConn::writeSocket(int* saveErrno) {
             off64_t offset = response_.contentOffset();
 
             size_t count = SSIZE_MAX;
-            if(response_.contentLen() < response_.contentOffset() + SSIZE_MAX)
+
+            // if(response_.contentLen() < response_.contentOffset() + SSIZE_MAX)
+            // if(response_.contentLen() - response_.contentOffset() < count)
+            if(response_.contentLen() - response_.contentOffset() < SSIZE_MAX)
                 count = response_.contentLen() - response_.contentOffset();
 
             ssize_t len = sendfile(socketFd_, response_.contentFd(), &offset, count);

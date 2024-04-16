@@ -52,8 +52,8 @@ bool Router::userVerify_(HttpConn& connection){
     MYSQL_RES* res = mysql_store_result(sql);
     MYSQL_ROW row = mysql_fetch_row(res);
     if (row) {
-        LOG_DEBUG("MYSQL ROW: %s %s", row[0], row[1]);
-        std::string password(row[1]);
+        LOG_DEBUG("MYSQL ROW: %s", row[0]);
+        std::string password(row[0]);
         flag = pwd == password;
         if (!flag) 
             LOG_DEBUG("Password error!");
@@ -64,8 +64,6 @@ bool Router::userVerify_(HttpConn& connection){
     }
 
     mysql_free_result(res);
-    // SqlConnPool::Instance()->FreeConn(sql);
-    LOG_DEBUG( "UserVerify success!!");
     if(flag)
         return getResource_(connection, "/welcome.html");
     else
@@ -100,13 +98,12 @@ bool Router::userCreate_(HttpConn& connection){
     MYSQL_ROW row = mysql_fetch_row(res);
     if (row) {
         LOG_DEBUG("MYSQL ROW: %s %s", row[0], row[1]);
-        std::string password(row[1]);
         flag = false;
         LOG_DEBUG("Username used!");
     } 
     mysql_free_result(res);
 
-    LOG_DEBUG("regirster!");
+    LOG_DEBUG("register!");
     bzero(order, 256);
     snprintf(order, 256,"INSERT INTO user(username, password) VALUES('%s','%s')", name.c_str(), pwd.c_str());
     LOG_DEBUG( "%s", order);
@@ -115,8 +112,6 @@ bool Router::userCreate_(HttpConn& connection){
         flag = false; 
     }
 
-    // SqlConnPool::Instance()->FreeConn(sql);
-    LOG_DEBUG( "UserVerify success!!");
     if(flag)
         getResource_(connection, "/welcome.html");
     else

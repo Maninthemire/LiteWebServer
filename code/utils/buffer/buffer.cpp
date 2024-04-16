@@ -75,8 +75,8 @@ std::string Buffer::getUntil(const std::string &suffix){
     const char* lineEnd = std::search(data(), data() + size(), suffix.begin(), suffix.end());
     // If not found, return empty string and keep buffer unmodified.
     if(lineEnd == data() + size()){
-        std::cout<<suffix<<"  NOT FOUND!!!!!!!!!"<<std::endl;
-        std::cout<<data()<<std::endl;
+        // std::cout<<suffix<<"  NOT FOUND!!!!!!!!!"<<std::endl;
+        // std::cout<<data()<<std::endl;
         return ""; 
     }
     std::string line(data(), lineEnd + suffix.size());
