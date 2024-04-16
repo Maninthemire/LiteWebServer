@@ -36,14 +36,22 @@ void HeapTimer::swapNode_(size_t i, size_t j) {
 } 
 
 void HeapTimer::siftUp_(size_t index) {
+    // assert(index < heap_.size());
+    // size_t i = index;
+    // size_t j = (i - 1) / 2;
+    // while(j >= 0) {
+    //     if(heap_[j] < heap_[i]) { break; }
+    //     swapNode_(i, j);
+    //     i = j;
+    //     j = (i - 1) / 2;
+    // }
     assert(index < heap_.size());
     size_t i = index;
-    size_t j = (i - 1) / 2;
-    while(j >= 0) {
+    while(i > 0) {
+        size_t j = (i - 1) / 2;
         if(heap_[j] < heap_[i]) { break; }
         swapNode_(i, j);
         i = j;
-        j = (i - 1) / 2;
     }
 }
 
