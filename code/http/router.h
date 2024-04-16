@@ -75,6 +75,7 @@ private:
     void addRoute_(const std::string& method, const std::string& url, HandlerFunc handler); 
 
     inline static void setConnectionHeaders_(HttpConn& connection) {
+        connection.response_.clear();
         if(connection.request_.getHeader("Connection") == "keep-alive" && connection.request_.version() == "1.1") {
             connection.isKeepAlive_ = true;
             connection.response_.addHeader("Connection", "keep-alive");

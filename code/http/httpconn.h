@@ -115,9 +115,9 @@ private:
 
     HttpRequest request_;
     HttpResponse response_;
+    std::function<bool(HttpConn&)> cachedHandler; 
 
     static Router router;
-    std::function<bool(HttpConn&)> cachedHandler; 
 };
 
 #endif //HTTP_CONN_H

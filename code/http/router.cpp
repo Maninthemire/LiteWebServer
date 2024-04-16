@@ -19,7 +19,7 @@ bool Router::getResource_(HttpConn& connection, std::string path_to_file){
     setConnectionHeaders_(connection);
     std::string fileName = srcDir;
     fileName += path_to_file;
-    LOG_DEBUG("Add Body:%s", fileName.c_str());
+    LOG_DEBUG("Respond Client [%d] \"GET %s\" with %s", connection.getFd(), connection.request_.url().c_str(), fileName.c_str());
     connection.response_.addBody(fileName);
     connection.response_.makeMessage(connection.writeBuff_, 200);
     return true; 
@@ -31,7 +31,7 @@ bool Router::userVerify_(HttpConn& connection){
     std::string name = connection.request_.getPost("username");
     std::string pwd = connection.request_.getPost("password");
     if (name.empty() || pwd.empty()){
-        return getResource_(connection, "error.html");
+        return getResource_(connection, "/error.html");
     }
 
     LOG_INFO("Verify name:%s pwd:%s", name.c_str(), pwd.c_str());
@@ -67,9 +67,9 @@ bool Router::userVerify_(HttpConn& connection){
     // SqlConnPool::Instance()->FreeConn(sql);
     LOG_DEBUG( "UserVerify success!!");
     if(flag)
-        return getResource_(connection, "welcome.html");
+        return getResource_(connection, "/welcome.html");
     else
-        return getResource_(connection, "error.html");
+        return getResource_(connection, "/error.html");
 }
 
 bool Router::userCreate_(HttpConn& connection){
@@ -78,7 +78,7 @@ bool Router::userCreate_(HttpConn& connection){
     std::string name = connection.request_.getPost("username");
     std::string pwd = connection.request_.getPost("password");
     if (name.empty() || pwd.empty()){
-        return getResource_(connection, "error.html");
+        return getResource_(connection, "/error.html");
     }
 
     LOG_INFO("Create name:%s pwd:%s", name.c_str(), pwd.c_str());
@@ -118,9 +118,9 @@ bool Router::userCreate_(HttpConn& connection){
     // SqlConnPool::Instance()->FreeConn(sql);
     LOG_DEBUG( "UserVerify success!!");
     if(flag)
-        getResource_(connection, "welcome.html");
+        getResource_(connection, "/welcome.html");
     else
-        getResource_(connection, "error.html");
+        getResource_(connection, "/error.html");
     return true;
 }
 
@@ -129,23 +129,23 @@ void Router::addRoute_(const std::string& method, const std::string& url, Handle
 }
 
 void Router::loadRoutes_() {
-    addRoute_("GET", "/", std::bind(&Router::getResource_, std::placeholders::_1, "index.html"));
-    addRoute_("GET", "/index", std::bind(&Router::getResource_, std::placeholders::_1, "index.html"));
-    addRoute_("GET", "/register", std::bind(&Router::getResource_, std::placeholders::_1, "register.html"));
-    addRoute_("GET", "/login", std::bind(&Router::getResource_, std::placeholders::_1, "login.html"));
-    addRoute_("GET", "/welcome", std::bind(&Router::getResource_, std::placeholders::_1, "welcome.html"));
-    addRoute_("GET", "/video", std::bind(&Router::getResource_, std::placeholders::_1, "video.html"));
-    addRoute_("GET", "/picture", std::bind(&Router::getResource_, std::placeholders::_1, "picture.html"));
+    addRoute_("GET", "/", std::bind(&Router::getResource_, std::placeholders::_1, "/index.html"));
+    addRoute_("GET", "/index", std::bind(&Router::getResource_, std::placeholders::_1, "/index.html"));
+    addRoute_("GET", "/register", std::bind(&Router::getResource_, std::placeholders::_1, "/register.html"));
+    addRoute_("GET", "/login", std::bind(&Router::getResource_, std::placeholders::_1, "/login.html"));
+    addRoute_("GET", "/welcome", std::bind(&Router::getResource_, std::placeholders::_1, "/welcome.html"));
+    addRoute_("GET", "/video", std::bind(&Router::getResource_, std::placeholders::_1, "/video.html"));
+    addRoute_("GET", "/picture", std::bind(&Router::getResource_, std::placeholders::_1, "/picture.html"));
 
-    addRoute_("POST", "/register", std::bind(&Router::getResource_, std::placeholders::_1, "register.html"));
-    addRoute_("POST", "/login", std::bind(&Router::getResource_, std::placeholders::_1, "login.html"));
+    addRoute_("POST", "/register", userCreate_);
+    addRoute_("POST", "/login", userVerify_);
 }
 
 bool Router::errorHandler_(HttpConn& connection) {
     // Try to GET an unknown URL
     setConnectionHeaders_(connection);
     std::string fileName = srcDir;
-    fileName += "404.html";
+    fileName += "/404.html";
     connection.response_.addBody(fileName);
     connection.response_.makeMessage(connection.writeBuff_, 404);
     return true;

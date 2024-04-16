@@ -57,17 +57,24 @@ inline std::string urlDecode(const std::string& str) {
 }
 
 bool HttpRequest::parseURL(Buffer& buff) {
+    if(header_.count("Content-Length") == 0){
+        // Can't parse unknown length url
+        state_ = INVALID;
+        return true;
+    }
+
     while(buff.size() && state_ != FINISH && state_ != INVALID) {
         std::string pair = buff.getUntil("&");
         if(!pair.size()){
-            pair = buff.getUntil(CRLF);
-            if(!pair.size())
+            // check if its the last kv pair
+            if(buff.size() < contentExpect)
                 return false;
-            pair = pair.substr(0, pair.length() - 2);            
+            pair = buff.getData(contentExpect); 
+            contentExpect = 0;           
             state_ = FINISH;
-            return true;
         }
         else{
+            contentExpect -= pair.size();      
             pair = pair.substr(0, pair.length() - 1);
         }
         std::regex pattern("^([^=]+)=(.+)$");
@@ -123,6 +130,8 @@ void HttpRequest::parseRequestLine_(const std::string& line) {
 void HttpRequest::parseHeader_(const std::string& line) {
     // LOG_DEBUG("Parsing Request Header [%s]", line.c_str());
     if(line == "\r\n"){
+        if(header_.count("Content-Length"))
+            contentExpect = std::stoul(header_["Content-Length"]);
         state_ = BODY;
         return;
     } // Empty line means the header is over.

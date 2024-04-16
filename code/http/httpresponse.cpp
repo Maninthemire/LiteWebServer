@@ -110,7 +110,8 @@ void HttpResponse::makeMessage(Buffer &buff, int code)
     for(auto field: header_)
         buff.addData(field.first + ": " + field.second + "\r\n");
 
-    LOG_DEBUG("Response Header\n%s", buff.data());
+    buff.addData("\r\n");
+    // LOG_DEBUG("Response Header length:%d\n%s", buff.size(), buff.data());
 }
 
 int HttpResponse::contentFd() const{

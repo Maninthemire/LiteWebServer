@@ -101,6 +101,7 @@ public:
 private:
     PARSE_STATE state_;
     std::string method_, url_, version_; // Content of request line
+    size_t contentExpect;
     std::unordered_map<std::string, std::string> header_; // Fields of request header
     std::unordered_map<std::string, std::string> post_; // Content of post request
     const std::string CRLF = "\r\n"; // Suffix of Carriage Return Line Feed

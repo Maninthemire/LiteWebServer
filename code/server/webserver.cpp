@@ -20,7 +20,7 @@ WebServer::WebServer(
     {
     srcDir_ = getcwd(nullptr, 256);
     assert(srcDir_);
-    strncat(srcDir_, "/resources/", 16);
+    strncat(srcDir_, "/resources", 16);
     Router::srcDir = std::string(srcDir_);
     SqlConnPool::Instance()->Init("localhost", sqlPort, sqlUser, sqlPwd, dbName, connPoolNum);
 
@@ -175,7 +175,7 @@ void WebServer::extentTime_(HttpConn* client) {
 
 void WebServer::onRead_(HttpConn* client) {
     assert(client);
-    LOG_DEBUG("Reading From Client[%d]", client->getFd());
+    // LOG_DEBUG("Reading From Client[%d]", client->getFd());
     int ret = -1;
     int readErrno = 0;
     ret = client->readSocket(&readErrno);
@@ -191,10 +191,10 @@ void WebServer::onRead_(HttpConn* client) {
 
 void WebServer::onProcess(HttpConn* client) {
     if(client->process()) {
-        LOG_DEBUG("Waiting for Writing");
+        // LOG_DEBUG("Waiting for Writing");
         epoller_->ModFd(client->getFd(), connEvent_ | EPOLLOUT);
     } else {
-        LOG_DEBUG("Waiting for Reading");
+        // LOG_DEBUG("Waiting for Reading");
         epoller_->ModFd(client->getFd(), connEvent_ | EPOLLIN);
     }
 }
@@ -207,19 +207,25 @@ void WebServer::onWrite_(HttpConn* client) {
     ret = client->writeSocket(&writeErrno);
     if(client->toWriteBytes() == 0) {
         /* 传输完成 */
+        // LOG_DEBUG("Writing To Client[%d] Finished", client->getFd());
         if(client->isKeepAlive()) {
             onProcess(client);
             return;
         }
-    }
-    else if(ret < 0) {
-        if(writeErrno == EAGAIN) {
-            /* 继续传输 */
-            epoller_->ModFd(client->getFd(), connEvent_ | EPOLLOUT);
+        else{
+            closeConn_(client);
             return;
         }
     }
-    closeConn_(client);
+    else if(ret < 0 && writeErrno != EAGAIN) {
+        // LOG_ERROR("Remaining %d bytes, Sending Failed!", client->toWriteBytes());
+        closeConn_(client);
+        return;
+    }
+    /* 继续传输 */
+    // LOG_DEBUG("Remaining %d bytes, Continue Sending", client->toWriteBytes());
+    epoller_->ModFd(client->getFd(), connEvent_ | EPOLLOUT);
+    return;
 }
 
 /* Create listenFd */

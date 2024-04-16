@@ -74,8 +74,10 @@ bool HttpConn::process() {
         // LOG_DEBUG("Getting Handler");
         cachedHandler = router.getHandler(*this);
     } 
-    if(!cachedHandler(*this))
+    if(!cachedHandler(*this))   // 如果处理函数还需要等待数据
         return false;
+    // 处理函数执行完毕，回收并重置request类解析结果
+    cachedHandler = nullptr;
     request_.clear();
     return true;
 }
@@ -93,20 +95,18 @@ ssize_t HttpConn::writeSocket(int* saveErrno) {
             totalLen += len;
         }// Send the header.
         else{   
-            // std::cout<<"len:"<<response_.contentLen()<<std::endl;
-            // std::cout<<"offset:"<<response_.contentOffset()<<std::endl;
             off64_t offset = response_.contentOffset();
 
             size_t count = SSIZE_MAX;
-            if(response_.contentLen() - response_.contentOffset() < count)
+            if(response_.contentLen() < response_.contentOffset() + SSIZE_MAX)
                 count = response_.contentLen() - response_.contentOffset();
 
             ssize_t len = sendfile(socketFd_, response_.contentFd(), &offset, count);
-            // std::cout<<"send:"<<len<<std::endl;
             if(len <= 0) {
                 *saveErrno = errno;
                 break;
             }
+            // LOG_DEBUG("Content Length:%d Offset:%d Send:%d", response_.contentLen(), offset, len);
             response_.contentSend(len);
             totalLen += len;
         }
