@@ -1,8 +1,10 @@
 /*
- * @Author       : mark
- * @Date         : 2020-06-16
- * @copyleft Apache 2.0
- */ 
+ * @file        : httpconn.cpp
+ * @Author      : zhenxi
+ * @Date        : 2024-03-13
+ * @copyleft    : Apache 2.0
+ */
+
 #ifndef LOG_H
 #define LOG_H
 
